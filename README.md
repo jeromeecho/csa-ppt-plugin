@@ -55,7 +55,132 @@ Each presentation follows a **5-phase workflow**:
 4. **Assemble** — Normalize mixed intermediate formats + combine into final .pptx or HTML
 5. **Review & Fix** — Independent quality check + fix loop (max 2 rounds)
 
-### Smart Intermediate Format Selection
+---
+
+## Slide Design System (淡雅清新多模版体系)
+
+Plugin 内置一套**淡雅清新多模版设计体系**，作为所有 PPT 生成的默认样式。
+
+### 设计理念
+
+> 白色背景、左上角深色标题、浅灰卡片、橙色点缀，禁止全幅深色横条。
+
+### 6 套模版
+
+每个模版是独立文件，新增模版只需添加一个文件：
+
+| 模版 | 名称 | 适用场景 | 文件 |
+|------|------|----------|------|
+| **A** | 对比/Before-After | 新旧对比、范式迁移 | [`template-A-comparison.md`](skills/csa-ppt/references/slide-templates/template-A-comparison.md) |
+| **B** | 架构/特性展示 | 系统架构、功能模块 | [`template-B-architecture.md`](skills/csa-ppt/references/slide-templates/template-B-architecture.md) |
+| **C** | 时间线/里程碑 | 时间演进、发展阶段 | [`template-C-timeline.md`](skills/csa-ppt/references/slide-templates/template-C-timeline.md) |
+| **D** | 编号网格 | 最佳实践、3-6 个要点 | [`template-D-numbered-grid.md`](skills/csa-ppt/references/slide-templates/template-D-numbered-grid.md) |
+| **E** | 左文右图 | 概念说明+图表配合 | [`template-E-text-diagram.md`](skills/csa-ppt/references/slide-templates/template-E-text-diagram.md) |
+| **F** | 多列等宽卡片 | 功能展示、等权分类 | [`template-F-multi-column.md`](skills/csa-ppt/references/slide-templates/template-F-multi-column.md) |
+
+辅助文件：
+- [`_shared.md`](skills/csa-ppt/references/slide-templates/_shared.md) — 通用组件规范（标题区、卡片、徽章、底部栏等）
+- [`README.md`](skills/csa-ppt/references/slide-templates/README.md) — 模版索引 + 选择决策表 + 扩展说明
+- [`slide-design-system.md`](skills/csa-ppt/references/slide-design-system.md) — 全局设计规范（配色、字体、禁止样式、html2pptx 规则）
+
+### 配色方案
+
+| 用途 | 色值 | 示例 |
+|------|------|------|
+| 主强调色（橙） | `#E8913A` | 序号徽章、图标、左竖线 |
+| 辅助色（蓝） | `#4472C4` | 图表系列、链接 |
+| 成功/绿 | `#70AD47` | 正面指标 |
+| 标题色 | `#1a1a2e` | 页面主标题 |
+| 卡片背景 | `#f0f2f5` | 内容卡片底色 |
+| 底部栏 | `#f5f5f7` | 洞察/摘要栏 |
+
+### 禁止样式
+
+- 全幅深色标题栏（`#4472C4` / `#2F5496` 全宽）
+- 全幅深色底部栏
+- 大面积深色色块 > 15%
+- 标题居中在蓝色背景内
+
+### 添加新模版
+
+1. 在 `skills/csa-ppt/references/slide-templates/` 下新建 `template-G-xxx.md`
+2. 按统一格式编写：适用场景 → 布局骨架(ASCII) → 区域说明 → 高度预算 → HTML 参考
+3. 在 `README.md` 决策表中新增一行
+4. 在 `slide-design-system.md` §4 模版选择表中新增一行
+
+---
+
+## Hook 强制规则
+
+Plugin 提供 `scripts/check-slide-html.sh` 脚本，可作为 **PostToolUse hook** 自动检查 slide HTML 违规：
+
+### 检查规则
+
+| 规则 | 说明 |
+|------|------|
+| 禁止全幅深色横条 | `width:960pt` 元素不得使用 `background:#4472C4` 或 `#2F5496` |
+| 尺寸匹配 | 有 `width:960pt` 时必须同时有 `height:540pt` |
+| 禁止蓝色标题栏 | `.title-bar` 类不得同时使用全幅 + 深色背景 |
+
+### 启用方式
+
+将 [`hooks-settings.json`](skills/csa-ppt/hooks-settings.json) 的内容复制到项目的 `.claude/settings.json`，并替换 `PLUGIN_PATH` 为实际路径：
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [{
+          "type": "command",
+          "command": "bash /path/to/scripts/check-slide-html.sh \"$CLAUDE_FILE_PATH\""
+        }]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [{
+          "type": "command",
+          "command": "bash /path/to/scripts/check-slide-html.sh \"$CLAUDE_FILE_PATH\""
+        }]
+      }
+    ]
+  }
+}
+```
+
+Hook 仅对 `slide*.html` 文件生效，其他文件自动跳过。
+
+---
+
+## Memory（设计偏好记忆）
+
+`skills/csa-ppt/memory/` 包含持久化的设计偏好文件，可复制到项目的 memory 目录：
+
+| 文件 | 内容 |
+|------|------|
+| `feedback_ppt_light_theme.md` | 淡雅多模版体系规则，禁止深色横条 |
+| `feedback_ppt_charts_required.md` | 每页必须含图表，左文右图布局 |
+| `feedback_ppt_sizing.md` | 95%+ 覆盖率规则，高度预算方法 |
+
+---
+
+## Multi-Platform Instructions
+
+每个 AI 编码工具会自动读取对应的指令文件，获得默认的 PPT 设计规范：
+
+| 平台 | 指令文件 | 自动加载 |
+|------|----------|----------|
+| Claude Code | `CLAUDE.md` | Yes |
+| GitHub Copilot | `.github/copilot-instructions.md` | Yes |
+| Cursor | `.cursorrules` | Yes |
+| OpenAI Codex | `AGENTS.md` | Yes |
+| Windsurf | `.windsurfrules` | Yes |
+| OpenCode | `opencode.json` | Yes |
+
+---
+
+## Smart Intermediate Format Selection
 
 Slide Builder Agents **choose the best intermediate format per-slide** based on content — not
 forced to match the final output format:
@@ -206,46 +331,68 @@ All changes you make to intermediate files will be picked up by the next phase.
 
 ```
 csa-ppt-plugin/
-├── .claude-plugin/              # Claude Code manifest
+├── CLAUDE.md                        # Claude Code 默认设计规范
+├── AGENTS.md                        # Codex 默认设计规范
+├── .cursorrules                     # Cursor 默认设计规范
+├── .windsurfrules                   # Windsurf 默认设计规范
+├── .claude-plugin/                  # Claude Code manifest
 │   ├── plugin.json
 │   └── marketplace.json
-├── .cursor-plugin/              # Cursor manifest
+├── .cursor-plugin/                  # Cursor manifest
 │   └── plugin.json
-├── .github/plugin/              # GitHub Copilot CLI manifest
-│   └── plugin.json
-├── .codex/skills -> skills      # Codex CLI symlink
-├── .agents/skills -> skills     # Cross-platform symlink (Cursor/Windsurf)
-├── .windsurf/skills -> skills   # Windsurf symlink
-├── .opencode/agents -> skills   # OpenCode symlink
-├── opencode.json                # OpenCode config
+├── .github/
+│   ├── plugin/plugin.json           # GitHub Copilot CLI manifest
+│   └── copilot-instructions.md      # Copilot 默认设计规范
+├── .codex/skills -> skills          # Codex CLI symlink
+├── .agents/skills -> skills         # Cross-platform symlink
+├── .windsurf/skills -> skills       # Windsurf symlink
+├── .opencode/agents -> skills       # OpenCode symlink
+├── opencode.json                    # OpenCode config
 ├── scripts/
-│   └── install.sh               # Multi-platform installer & verifier
+│   ├── install.sh                   # Multi-platform installer & verifier
+│   └── check-slide-html.sh         # Hook: slide HTML 规则检查
 ├── skills/
-│   ├── csa-ppt/                 # Main orchestrator
-│   │   ├── SKILL.md             # Routing logic, workflow, Style Contract
-│   │   ├── agents/              # 6 specialized sub-agents
+│   ├── csa-ppt/                     # Main orchestrator
+│   │   ├── SKILL.md                 # Routing logic, workflow, Style Contract
+│   │   ├── hooks-settings.json      # Hook 配置模版（复制到项目 .claude/settings.json）
+│   │   ├── memory/                  # 持久化设计偏好
+│   │   │   ├── MEMORY.md
+│   │   │   ├── feedback_ppt_light_theme.md
+│   │   │   ├── feedback_ppt_charts_required.md
+│   │   │   └── feedback_ppt_sizing.md
+│   │   ├── agents/                  # 6 specialized sub-agents
 │   │   │   ├── research-agent.md
 │   │   │   ├── diagram-agent.md
 │   │   │   ├── slide-builder-agent.md
 │   │   │   ├── assembly-agent.md
 │   │   │   ├── review-agent.md
 │   │   │   └── fix-agent.md
-│   │   ├── references/          # Workflow guides per scenario
-│   │   │   ├── templates.md
+│   │   ├── references/
+│   │   │   ├── slide-design-system.md       # 全局设计规范
+│   │   │   ├── slide-templates/             # 模版目录
+│   │   │   │   ├── README.md                # 模版索引 + 选择决策表
+│   │   │   │   ├── _shared.md               # 通用组件规范
+│   │   │   │   ├── template-A-comparison.md
+│   │   │   │   ├── template-B-architecture.md
+│   │   │   │   ├── template-C-timeline.md
+│   │   │   │   ├── template-D-numbered-grid.md
+│   │   │   │   ├── template-E-text-diagram.md
+│   │   │   │   └── template-F-multi-column.md
+│   │   │   ├── templates.md                 # Task plan / style contract templates
 │   │   │   ├── orchestration-and-mcp.md
 │   │   │   ├── workflow-customer-demo.md
 │   │   │   ├── workflow-tech-sharing.md
 │   │   │   ├── workflow-workshop.md
 │   │   │   ├── workflow-architecture-review.md
 │   │   │   └── workflow-template-fill.md
-│   │   └── evals/               # Skill evaluation test cases
+│   │   └── evals/
 │   │       └── evals.json
-│   ├── azure-diagrams/          # 700+ Azure icons, diagram scripts
-│   ├── excalidraw-diagram/      # Hand-drawn style diagrams
-│   ├── frontend-slides/         # HTML presentations
-│   ├── pptx/                    # OOXML PowerPoint creation
-│   ├── skywork-ppt/             # Quick PPT generation
-│   └── planning-with-files/     # Task planning system
+│   ├── azure-diagrams/              # 700+ Azure icons, diagram scripts
+│   ├── excalidraw-diagram/          # Hand-drawn style diagrams
+│   ├── frontend-slides/             # HTML presentations
+│   ├── pptx/                        # OOXML PowerPoint creation
+│   ├── skywork-ppt/                 # Quick PPT generation
+│   └── planning-with-files/         # Task planning system
 └── README.md
 ```
 
