@@ -13,7 +13,7 @@ description: >
   diagrams.
 metadata:
   author: huqianghui
-  version: "1.0.9"
+  version: "1.1.1"
   license: MIT
 ---
 
@@ -407,6 +407,37 @@ Read the appropriate reference file for the scenario at hand:
 
 For orchestration patterns and MCP integration details, read `references/orchestration-and-mcp.md`.
 For task plan and style contract templates, read `references/templates.md`.
+
+## Slide Design System (Modular Templates)
+
+The slide design system defines a **light/elegant multi-template approach** (淡雅清新多模版体系).
+
+**MANDATORY**: When creating slides via html2pptx, follow the design system and choose the appropriate template per slide based on content semantics.
+
+| Resource | Path | Purpose |
+|----------|------|---------|
+| **Design System** (global rules) | `references/slide-design-system.md` | Page basics, colors, fonts, prohibited styles, chart specs, html2pptx height rules |
+| **Template Index** | `references/slide-templates/README.md` | Decision table for selecting templates, how to add new templates |
+| **Shared Components** | `references/slide-templates/_shared.md` | Common elements: title area, cards, badges, bottom bar, extension area |
+| **Template A** (Comparison) | `references/slide-templates/template-A-comparison.md` | Before/After, paradigm shifts |
+| **Template B** (Architecture) | `references/slide-templates/template-B-architecture.md` | System architecture, feature modules |
+| **Template C** (Timeline) | `references/slide-templates/template-C-timeline.md` | Milestones, evolution |
+| **Template D** (Numbered Grid) | `references/slide-templates/template-D-numbered-grid.md` | Best practices, 3-6 key points |
+| **Template E** (Text + Diagram) | `references/slide-templates/template-E-text-diagram.md` | Concept explanation with chart/diagram |
+| **Template F** (Multi-Column) | `references/slide-templates/template-F-multi-column.md` | Feature showcase, equal-weight categories |
+
+**Key design rules** (enforced by `scripts/check-slide-html.sh` hook):
+- Page background: pure white `#ffffff`
+- Title: left-aligned, dark `#1a1a2e`, no colored background bar
+- Card backgrounds: `#f0f2f5` (light gray)
+- **Prohibited**: full-width dark bars (`#4472C4`/`#2F5496` at `width:960pt`)
+- Accent color (orange `#E8913A`) for badges, icons, borders only — area < 15%
+- Every slide must include at least one visualization (chart/diagram/flow)
+- Content coverage >= 95% of page area
+
+**Hook enforcement**: Copy `hooks-settings.json` to `.claude/settings.json` in the project to enable automatic HTML rule checking on Write/Edit.
+
+**Memory files**: `memory/` contains persistent design preferences — copy relevant files to the project's memory directory.
 
 ## Sub-Skill Locations
 

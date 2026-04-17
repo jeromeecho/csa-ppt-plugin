@@ -1,0 +1,25 @@
+{
+  "_comment": "Copy this to your project's .claude/settings.json. Replace PLUGIN_PATH with the actual installed plugin path (e.g., ~/.claude/plugins/marketplaces/csa-skills/scripts/check-slide-html.sh)",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash PLUGIN_PATH/scripts/check-slide-html.sh \"$CLAUDE_FILE_PATH\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash PLUGIN_PATH/scripts/check-slide-html.sh \"$CLAUDE_FILE_PATH\""
+          }
+        ]
+      }
+    ]
+  }
+}
