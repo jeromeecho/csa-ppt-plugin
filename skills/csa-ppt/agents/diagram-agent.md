@@ -34,6 +34,12 @@ Read `{workspace_path}/style_contract.md` for the locked Style Contract (color p
 
 ### Step 1: Analyze Diagram Requirements
 
+> **强制规则**: 凡涉及云服务（Azure/AWS/GCP）的架构图，**必须**使用 azure-diagrams
+> （Python `diagrams` 库 + graphviz），**禁止**退化为 inline SVG 或 matplotlib 替代。
+> azure-diagrams 的 700+ 官方图标能确保专业性和图标准确性。
+> 可先运行 `azure-diagrams/scripts/detect_cloud_arch.py --outline <task_plan.md>`
+> 自动识别需要架构图的 slides，确保不会遗漏。
+
 For each diagram in the specs, determine:
 
 | Diagram Type | Best Tool | Why |
@@ -45,6 +51,12 @@ For each diagram in the specs, determine:
 | Timeline / roadmap | **azure-diagrams** (matplotlib) | Timeline layout support |
 | Hand-drawn / conceptual | **excalidraw-diagram** | Whiteboard aesthetic, brainstorming visuals |
 | Simple flow / decision tree | **excalidraw-diagram** | Quick, informal style |
+
+> **手绘图强制规则**: 当用户明确要求手绘风格（手绘、sketch、whiteboard、概念草图等），
+> **必须**使用 excalidraw-diagram skill 生成 `.excalidraw` JSON 文件并通过 `render_excalidraw.py` 渲染为 PNG。
+> **禁止**用 inline SVG 或其他方式模拟手绘效果。
+> 可先运行 `excalidraw-diagram/scripts/detect_excalidraw.py detect --outline <task_plan.md>` 识别需要手绘图的 slides。
+> 图生成后，运行 `excalidraw-diagram/scripts/detect_excalidraw.py validate --dir <diagrams/>` 验证输出确实来自 excalidraw-diagram（必须有 .excalidraw 源文件）。
 
 ### Step 2: Read the Sub-Skill Instructions
 

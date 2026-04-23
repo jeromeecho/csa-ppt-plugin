@@ -1,6 +1,6 @@
 ---
 name: skywork-ppt
-description: "Use this skill for fully local PowerPoint workflows in Claude Code: generate a new deck from a topic or reference files, create a new deck from a local template, edit an existing PPTX through a local JSON edit plan, inspect slide count, delete slides, reorder slides, extract slides, and merge PPTX files. Web research should be done with the user's configured local web-search MCP server. Python 3.8+ is required."
+description: "Use this skill for local PPTX slide operations: inspect slide count and titles, delete specific slides, reorder slides, extract a subset of slides into a new file, and merge multiple PPTX files. Also supports editing existing PPTX via JSON edit plan and template-based generation. For creating new presentations from scratch, prefer the pptx skill (html2pptx) instead. Python 3.8+ is required."
 metadata:
   openclaw:
     requires:

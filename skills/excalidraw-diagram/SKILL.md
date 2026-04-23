@@ -1,6 +1,6 @@
 ---
 name: excalidraw-diagram
-description: Create Excalidraw diagram JSON files that make visual arguments. Use when the user wants to visualize workflows, architectures, or concepts.
+description: Create Excalidraw diagram JSON files that make visual arguments. Use when the user wants to visualize workflows, architectures, or concepts with a hand-drawn or whiteboard aesthetic. IMPORTANT - When the user explicitly requests hand-drawn (手绘), sketch (草图), whiteboard, or conceptual diagrams for PPT/presentations, this skill MUST be used. It produces .excalidraw JSON + rendered PNG that can be embedded into slides. Use detect_excalidraw.py to identify slides needing this style and validate outputs.
 ---
 
 # Excalidraw Diagram Creator

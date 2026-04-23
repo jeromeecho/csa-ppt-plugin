@@ -13,7 +13,7 @@ description: >
   diagrams.
 metadata:
   author: huqianghui
-  version: "1.1.1"
+  version: "1.2.0"
   license: MIT
 ---
 
@@ -352,6 +352,24 @@ Do NOT re-run the full 5-phase pipeline for incremental changes.
 
 Analyze the request along these dimensions, then route accordingly:
 
+### 0. Combined Routing Rules (优先级最高)
+
+> **云架构 PPT 强制规则**: 当 PPT 内容包含云架构（Azure/AWS/GCP 服务拓扑、网络架构、
+> 数据流水线等），**必须**先调用 `azure-diagrams` 生成专业架构图 PNG，再将 PNG 嵌入
+> `pptx`(html2pptx) 幻灯片。禁止用 inline SVG/matplotlib 替代 azure-diagrams 画云架构图。
+
+| 场景 | 组合流程 | 说明 |
+|------|---------|------|
+| PPT 含云架构图 | **azure-diagrams** → **pptx** | 先生成 PNG，再嵌入 html2pptx 幻灯片 |
+| PPT 含流程图/泳道图 | **azure-diagrams** → **pptx** | graphviz 泳道图比 inline SVG 更专业 |
+| PPT 含手绘概念图 | **excalidraw-diagram** → **pptx** | 先生成 .excalidraw + PNG，再嵌入幻灯片 |
+| 纯文字/数据图表 PPT | **pptx** 单独完成 | 柱状图/饼图等用 PptxGenJS 内置即可 |
+
+**判断方法**:
+- 运行 `azure-diagrams/scripts/detect_cloud_arch.py` 分析幻灯片大纲，自动识别需要 azure-diagrams 的 slides。
+- 运行 `excalidraw-diagram/scripts/detect_excalidraw.py detect` 识别需要手绘风格图的 slides。
+- 图生成完成后，运行 `excalidraw-diagram/scripts/detect_excalidraw.py validate` 验证输出确实来自 excalidraw-diagram skill（必须有 .excalidraw JSON 源文件 + 渲染 PNG）。
+
 ### 1. What's the primary content type?
 
 | Content | Best Tool | Why |
@@ -367,10 +385,11 @@ Analyze the request along these dimensions, then route accordingly:
 | Scenario | Format | Tool Chain |
 |----------|--------|------------|
 | Given a .pptx template to fill | .pptx | **skywork-ppt** (template workflow) or **pptx** (OOXML for complex templates) |
-| Customer-facing formal deck | .pptx | **pptx** (html2pptx for rich layouts) or **skywork-ppt** (quick generation) |
-| Internal sharing / demo | HTML or .pptx | **frontend-slides** if animation/中文 heavy; otherwise skywork-ppt |
-| Architecture review document | Images + .pptx | **azure-diagrams** → embed in pptx |
+| Customer-facing formal deck | .pptx | **pptx** (html2pptx for rich layouts) |
+| Internal sharing / demo | HTML or .pptx | **frontend-slides** if animation/中文 heavy; otherwise **pptx** |
+| Architecture review document | Images + .pptx | **azure-diagrams** → embed in **pptx** |
 | Workshop hands-on guide | HTML | **frontend-slides** (step-by-step with code blocks renders best in HTML) |
+| Slide manipulation (delete/merge/reorder) | .pptx | **skywork-ppt** (local_pptx_ops.py) |
 
 ### 3. Language & encoding considerations
 
@@ -452,7 +471,7 @@ These paths are relative to the skill directory (where this SKILL.md lives):
 | excalidraw-diagram | `../excalidraw-diagram/SKILL.md` | Need hand-drawn style diagrams |
 | frontend-slides | `../frontend-slides/SKILL.md` | Creating HTML presentations |
 | pptx | `../pptx/SKILL.md` | Complex .pptx creation/editing |
-| skywork-ppt | `../skywork-ppt/SKILL.md` | Quick .pptx generation or template fill |
+| skywork-ppt | `../skywork-ppt/SKILL.md` | Slide local operations (info/delete/reorder/extract/merge) or template fill |
 
 **Read the relevant sub-skill's SKILL.md before using it.** Each has specific patterns,
 scripts, and constraints that matter for quality output.

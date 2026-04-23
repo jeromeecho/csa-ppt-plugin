@@ -1,6 +1,6 @@
 ---
 name: azure-diagrams
-description: Comprehensive technical diagramming toolkit for solutions architects, presales, and developers. Creates Azure architecture diagrams (700+ official Microsoft icons), business process flows (swimlanes, workflows), ERD diagrams (database schemas), project timelines, UI wireframes, and network topology diagrams. Perfect for proposals, documentation, and architecture reviews. Also generates diagrams from Bicep, Terraform, and ARM templates.
+description: Comprehensive technical diagramming toolkit for solutions architects, presales, and developers. Creates Azure architecture diagrams (700+ official Microsoft icons), business process flows (swimlanes, workflows), ERD diagrams (database schemas), project timelines, UI wireframes, and network topology diagrams. Perfect for proposals, documentation, and architecture reviews. Also generates diagrams from Bicep, Terraform, and ARM templates. IMPORTANT - When creating PPT/presentations that include cloud architecture content (Azure, AWS, GCP), this skill MUST be used to generate architecture diagrams with official cloud provider icons. Output PNGs can be embedded directly into slides via the pptx skill.
 compatibility: Requires graphviz system package and Python diagrams library. Works with Claude Code, GitHub Copilot, VS Code, and any Agent Skills compatible tool.
 license: MIT
 metadata:
