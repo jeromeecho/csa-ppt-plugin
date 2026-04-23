@@ -6,13 +6,14 @@ Works with **Claude Code**, **Cursor**, **GitHub Copilot CLI**, **OpenAI Codex C
 
 ## What's Inside
 
-### Skills (1 orchestrator + 5 sub-skills + 1 utility)
+### Skills (1 orchestrator + 6 sub-skills + 1 utility)
 
 | Skill | Description |
 |-------|-------------|
 | **csa-ppt** | Smart orchestrator — analyzes your request and routes to the best tool chain |
 | **azure-diagrams** | 700+ cloud icons (Azure/AWS/GCP), architecture diagrams, swimlane flows, ERDs, timelines |
 | **excalidraw-diagram** | Hand-drawn style diagrams for brainstorming and conceptual visuals |
+| **gpt-image** | AI image generation (Azure OpenAI GPT-image-2) — photorealistic illustrations, concept art, hero backgrounds |
 | **frontend-slides** | Zero-dependency HTML presentations, great for Chinese content and code |
 | **pptx** | Full OOXML-level PowerPoint creation and editing |
 | **skywork-ppt** | Quick PowerPoint generation, template-based creation, and slide operations |
@@ -54,6 +55,123 @@ Each presentation follows a **5-phase workflow**:
 3. **Execute** — Research + diagrams + slides (parallel where possible)
 4. **Assemble** — Normalize mixed intermediate formats + combine into final .pptx or HTML
 5. **Review & Fix** — Independent quality check + fix loop (max 2 rounds)
+
+---
+
+## Diagram & Image Skill Routing (图表/图片技能路由规则)
+
+本插件包含 **4 种可视化生成能力**，按「结构化 → 写实/艺术」光谱排列，各司其职、互不重叠：
+
+```
+        结构化 ◄─────────────────────────────────► 写实/艺术
+
+  PptxGenJS        azure-diagrams      excalidraw-diagram      gpt-image
+  (数据图表)         (架构图)             (概念手绘)            (写实插画/场景)
+      ▲                  ▲                   ▲                      ▲
+   纯数据             技术架构            思维概念              视觉表达/氛围
+```
+
+### 快速决策树
+
+```
+需要什么类型的图？
+├── 数值对比 / 趋势 / 占比  ──────► pptx（PptxGenJS 内置柱状图/饼图/折线图）
+├── 云服务架构 (Azure/AWS/GCP) ──► azure-diagrams（700+ 官方图标）
+├── 泳道流程 / 业务流程 ─────────► azure-diagrams（Graphviz 泳道）
+├── 序列图 / 认证流程 ──────────► azure-diagrams（序列图模式）
+├── ERD / 数据模型 ─────────────► azure-diagrams（ER 图）
+├── 时间线 / 里程碑 ────────────► azure-diagrams（Timeline/Gantt）
+├── 手绘 / 白板 / 概念草图 ────► excalidraw-diagram（手绘美学）
+└── 以下场景用 gpt-image ──────►
+    ├── 封面/标题页概念插画
+    ├── 行业场景写实图（零售、工厂、医院、智慧城市）
+    ├── 抽象概念可视化（零信任、云原生隐喻）
+    ├── 产品 UI 概念图
+    ├── 幻灯片背景/Hero 图
+    └── 多语言信息图
+```
+
+### 能力对比矩阵
+
+| 能力 | PptxGenJS | azure-diagrams | excalidraw-diagram | gpt-image |
+|------|:---------:|:--------------:|:------------------:|:---------:|
+| 柱状图/饼图/折线图 | **最佳** | — | — | — |
+| 云架构图 (Azure/AWS/GCP) | — | **最佳** (700+ 图标) | — | — |
+| 泳道/流程图 | — | **最佳** | 可用 | — |
+| 手绘/白板风格 | — | — | **最佳** | — |
+| ERD / 数据模型 | — | **最佳** | — | — |
+| 时间线 / 甘特图 | — | **最佳** | 可用 | — |
+| 写实场景插画 | — | — | — | **独有** |
+| 概念艺术/封面图 | — | — | — | **独有** |
+| 行业场景图像 | — | — | — | **独有** |
+| 多语言嵌入文字图 | — | — | — | **独有** |
+| 产品 UI 概念图 | — | — | — | **独有** |
+| 幻灯片背景/Hero | CSS only | — | — | **独有** |
+
+### 各 Skill 详细说明
+
+#### azure-diagrams — 技术架构图
+
+| 图表类型 | 参考文件 | 示例调用 |
+|----------|----------|----------|
+| Azure 架构图 | `references/azure-components.md` | "Design a microservices architecture with AKS and Cosmos DB" |
+| 业务流程图 (泳道) | `references/business-process-flows.md` | "Create a swimlane for invoice approval workflow" |
+| ER 图 (数据模型) | `references/entity-relationship-diagrams.md` | "Generate an ERD for customer and order entities" |
+| 时间线 / 甘特图 | `references/timeline-gantt-diagrams.md` | "Create a 6-month migration roadmap" |
+| UI 线框图 | `references/ui-wireframe-diagrams.md` | "Design a KPI dashboard layout" |
+| 通用模式 (Hub-Spoke 等) | `references/common-patterns.md` | "Show a hub-spoke network topology" |
+
+**支持 IaC 逆向生成**：读取 Bicep / Terraform / ARM Template / Azure Pipelines YAML / GitHub Actions 文件，自动生成架构图。
+
+**强制规则**：PPT 中包含云架构内容（Azure/AWS/GCP 服务拓扑、网络架构、数据管线等）时，**必须**使用 azure-diagrams 生成 PNG，禁止用内联 SVG/matplotlib 替代。
+
+#### excalidraw-diagram — 手绘概念图
+
+适用于需要白板/手绘美学的场景。输出 `.excalidraw` JSON + 渲染 PNG，可嵌入 PPT。
+
+| 视觉模式 | 适用场景 |
+|----------|----------|
+| Fan-Out (一对多) | 来源、PRD、根因分析、中心枢纽 |
+| Convergence (多对一) | 聚合、漏斗、综合 |
+| Tree (层级) | 文件系统、组织架构、分类 |
+| Spiral/Cycle (循环) | 反馈闭环、迭代过程、演进 |
+| Assembly Line (转换) | 输入→处理→输出的转换链 |
+| Side-by-Side (对比) | Before/After、方案对比 |
+| Timeline (时间线) | 线 + 点 + 标签的时间序列 |
+
+**强制规则**：用户明确要求手绘（手绘/草图/whiteboard/sketch）风格时，**必须**使用 excalidraw-diagram。
+
+#### gpt-image — AI 写实插画
+
+基于 Azure OpenAI GPT-image-2 模型，生成照片级插画、概念艺术、场景图像。
+
+| 用途 | 示例 | 为什么用 gpt-image |
+|------|------|-------------------|
+| 封面/标题页 | "AI赋能数字化转型" 概念插画 | 其他工具无法创建写实概念图 |
+| 行业场景 | 零售店、工厂车间、医院、智慧城市 | 方案演示需要场景化视觉 |
+| 抽象概念 | "零信任安全" 隐喻图、"云原生" 插画 | 超越方框箭头的视觉叙事 |
+| 产品 UI 概念 | 仪表盘预览、App 概念图 | 比 excalidraw 手绘更写实 |
+| Hero 背景 | 带科技元素的渐变网格背景 | CSS 渐变太平，AI 创造景深 |
+| 自定义图标 | 品牌概念图标（Azure 图标库没有的） | 填补标准图标库空白 |
+| 多语言信息图 | 嵌入中英文文字的图像 | 原生 CJK 文字渲染支持 |
+
+**不要用 gpt-image 的场景**：云架构图 → azure-diagrams | 手绘风格 → excalidraw-diagram | 数据图表 → pptx
+
+### 编排器路由优先级
+
+csa-ppt 编排器按以下优先级自动路由：
+
+| 优先级 | 规则 | 说明 |
+|--------|------|------|
+| **P0** | 强制组合路由 | 云架构 PPT → azure-diagrams → pptx；手绘概念 PPT → excalidraw → pptx；写实插画 → gpt-image → pptx |
+| **P1** | 内容类型 | 架构图 → azure-diagrams；手绘 → excalidraw；写实 → gpt-image；数据图表 → pptx |
+| **P2** | 交付格式 | 客户正式 → pptx(html2pptx)；内部/Demo → frontend-slides 或 pptx；模板填充 → skywork-ppt |
+| **P3** | 语言 | 中文为主 → 偏好 HTML 中间格式；英文/混合 → 任意 |
+| **P4** | 模板处理 | 简单填充 → skywork-ppt；复杂排版 → pptx OOXML |
+
+**自动检测脚本**：
+- `azure-diagrams/scripts/detect_cloud_arch.py` — 分析幻灯片大纲，自动识别需要架构图的页面
+- `excalidraw-diagram/scripts/detect_excalidraw.py` — 检测需要手绘风格的页面 + 验证输出
 
 ---
 
@@ -389,6 +507,7 @@ csa-ppt-plugin/
 │   │       └── evals.json
 │   ├── azure-diagrams/              # 700+ Azure icons, diagram scripts
 │   ├── excalidraw-diagram/          # Hand-drawn style diagrams
+│   ├── gpt-image/                   # AI photorealistic image generation (GPT-image-2)
 │   ├── frontend-slides/             # HTML presentations
 │   ├── pptx/                        # OOXML PowerPoint creation
 │   ├── skywork-ppt/                 # Quick PPT generation
