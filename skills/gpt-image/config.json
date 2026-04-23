@@ -1,0 +1,6 @@
+{
+  "azure_openai_endpoint": "",
+  "azure_openai_api_key": "",
+  "deployment_name": "gpt-image-2",
+  "api_version": "2025-04-01-preview"
+}
