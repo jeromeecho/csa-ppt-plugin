@@ -19,6 +19,43 @@ This skill is fully local.
 
 All PPT generation, template-based generation, editing, and file operations run against local files in `skywork-ppt/scripts`.
 
+## ⚠️ MANDATORY: Visual Validation (ALL Workflows)
+
+**Every PPTX output MUST pass visual validation before delivery.** This is a hard requirement — no exceptions.
+
+### 最高优先级规则
+
+**内容完整显示 + 合理布局 > 字体大小**
+
+- 所有文本必须完整可见，不允许截断或溢出（**硬约束**）
+- 文本尽量不换行；如果换行后最后一行内容 < 20%（widow line），必须修复（**硬约束**）
+- 字体大小尽量 >= 10pt，但为满足上述两条可缩至任意合理大小（**软约束**）
+- **完整可见 > 合理布局 > 字体大小** — 字体大小永远让步于内容完整显示
+
+### 验证流程
+
+After ANY generation, editing, or structural modification that adds/changes content:
+
+```bash
+$PYTHON_CMD -m pip install -q python-pptx Pillow
+
+# 验证脚本位于 csa-skills 插件根目录:
+CSA_SCRIPTS="$HOME/.claude/plugins/marketplaces/csa-skills/scripts"
+
+$PYTHON_CMD "$CSA_SCRIPTS/validate_visual.py" /path/to/output.pptx --output /tmp/ppt_validation.json
+```
+
+If validation FAILS (exit code 1):
+
+```bash
+$PYTHON_CMD "$CSA_SCRIPTS/fix_overflow.py" /path/to/output.pptx --report /tmp/ppt_validation.json -o /path/to/output.pptx
+$PYTHON_CMD "$CSA_SCRIPTS/validate_visual.py" /path/to/output.pptx --output /tmp/ppt_validation.json
+```
+
+**Do NOT deliver the file until validation passes.** If auto-fix cannot resolve all issues on newly created slides, go back and fix the generation code (adjust font sizes, text box dimensions, or content length).
+
+Read `workflow_validate.md` for the full validation loop details.
+
 ## Supported workflows
 
 | User intent | Workflow |
@@ -27,6 +64,7 @@ All PPT generation, template-based generation, editing, and file operations run 
 | Use a local `.pptx` as a style/layout template | `workflow_imitate.md` |
 | Edit an existing local `.pptx` | `workflow_edit.md` |
 | View / delete / reorder / extract / merge slides | `workflow_local.md` |
+| **Validate & fix output (MANDATORY final step)** | `workflow_validate.md` |
 
 ## Environment check
 
@@ -47,7 +85,7 @@ if [ -z "$PYTHON_CMD" ]; then
 fi
 
 echo "Found Python: $PYTHON_CMD ($($PYTHON_CMD --version))"
-$PYTHON_CMD -m pip install -q python-pptx
+$PYTHON_CMD -m pip install -q python-pptx Pillow
 ```
 
 Use the resolved `$PYTHON_CMD` in every subsequent command.
@@ -132,10 +170,13 @@ Recommended pattern:
 | `scripts/parse_file.py` | Parse local source files into plain text |
 | `scripts/web_search.py` | Merge locally saved search notes into one reference markdown file |
 | `scripts/local_pptx_ops.py` | Direct local slide operations |
+| `scripts/validate_visual.py` | **MANDATORY** Visual validation — detect text overflow, font issues |
+| `scripts/fix_overflow.py` | Auto-fix overflow issues (font reduction, spacing, expansion) |
 
 ## Dependency summary
 
 - Python 3.8+
 - `python-pptx`
+- `Pillow` (for text measurement in validation)
 
 No other service is required for the base workflow.

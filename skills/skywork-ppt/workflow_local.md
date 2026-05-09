@@ -124,6 +124,28 @@ User says "Delete slide 3 from this PPT" / "Merge these two pptx" / "Extract the
 
 ---
 
+---
+
+## Visual Validation (MANDATORY for merge/extract that add content)
+
+After `merge` or `extract` operations, run validation on the output:
+
+```bash
+$PYTHON_CMD "$CSA_SCRIPTS/validate_visual.py" /absolute/path/output.pptx --output /tmp/ppt_validation.json
+```
+
+If issues found, auto-fix:
+
+```bash
+$PYTHON_CMD "$CSA_SCRIPTS/fix_overflow.py" /absolute/path/output.pptx \
+  --report /tmp/ppt_validation.json \
+  -o /absolute/path/output.pptx
+```
+
+**Do NOT deliver until validation passes on newly added/modified slides.**
+
+---
+
 ## FAQ
 
 **Q: Do page numbers change after deletion?**

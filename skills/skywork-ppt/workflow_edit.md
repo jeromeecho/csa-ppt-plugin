@@ -92,11 +92,40 @@ On success the script prints:
 - `SLIDE_COUNT: ...`
 - `SUMMARY: [...]`
 
-Deliver:
+## 5. Visual Validation (MANDATORY — do NOT skip)
+
+**This step is required before delivering any output.**
+
+Run validation:
+
+```bash
+$PYTHON_CMD "$CSA_SCRIPTS/validate_visual.py" /absolute/path/output.pptx --output /tmp/ppt_validation.json
+```
+
+If exit code is 1 (issues found), auto-fix:
+
+```bash
+$PYTHON_CMD "$CSA_SCRIPTS/fix_overflow.py" /absolute/path/output.pptx \
+  --report /tmp/ppt_validation.json \
+  -o /absolute/path/output.pptx
+```
+
+Re-validate:
+
+```bash
+$PYTHON_CMD "$CSA_SCRIPTS/validate_visual.py" /absolute/path/output.pptx --output /tmp/ppt_validation.json
+```
+
+- If PASS → proceed to deliver
+- If FAIL on edited slides → revise the edit plan (reduce text, adjust layout) and re-apply
+- If FAIL only on untouched slides with minor overflow (< 0.1") → acceptable, deliver with note
+
+## 6. Deliver
 
 1. the output path
 2. the applied change summary
 3. any follow-up edits still needed
+4. validation status (PASS / number of remaining minor issues)
 
 ## Notes
 
@@ -104,3 +133,4 @@ Deliver:
 - There is no URL upload step.
 - Slide references are 1-based in the edit plan.
 - Reorder plans must include every slide exactly once.
+- **Validation is non-negotiable** — the task is NOT complete until validation passes.

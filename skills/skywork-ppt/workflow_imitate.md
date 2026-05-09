@@ -76,14 +76,36 @@ On success the script prints:
 - `SLIDE_COUNT: ...`
 - `SLIDE_TITLES: [...]`
 
-Deliver:
+## 6. Visual Validation (MANDATORY — do NOT skip)
+
+**This step is required before delivering any output.**
+
+Run validation:
+
+```bash
+$PYTHON_CMD "$CSA_SCRIPTS/validate_visual.py" /absolute/path/output.pptx --output /tmp/ppt_validation.json
+```
+
+If exit code is 1 (issues found), auto-fix:
+
+```bash
+$PYTHON_CMD "$CSA_SCRIPTS/fix_overflow.py" /absolute/path/output.pptx \
+  --report /tmp/ppt_validation.json \
+  -o /absolute/path/output.pptx
+```
+
+Re-validate. Repeat until pass or report remaining issues.
+
+## 7. Deliver
 
 1. the output path
 2. the template file used
 3. the generated slide summary
+4. validation status (PASS / number of remaining minor issues)
 
 ## Notes
 
 - The template file supplies theme, masters, and layout selection context.
 - This is local template reuse, not remote template matching.
 - If the user needs exact placeholder-by-placeholder remapping, inspect the template first and provide an explicit outline JSON to control slide structure more tightly.
+- **Validation is non-negotiable** — the task is NOT complete until validation passes.

@@ -529,10 +529,80 @@ Phase 5: Review Agent (Round 2)
   WRITES → final/review_report.md (updated)
 ```
 
+## ⚠️ MANDATORY: Visual Validation (最终交付门禁)
+
+**最高优先级规则：内容完整显示 + 合理布局 > 字体大小**
+
+- 所有文本必须完整可见，不允许截断或溢出（**硬约束**）
+- 文本尽量不换行；如果换行后最后一行内容 < 20%（widow line），必须修复（**硬约束**）
+- 字体大小尽量 >= 10pt，但为满足上述两条可缩至任意合理大小（**软约束**）
+- **完整可见 > 合理布局 > 字体大小** — 字体大小永远让步于内容完整显示
+
+**Every .pptx output MUST pass visual validation before delivery — no exceptions.**
+
+After ANY generation, editing, or structural modification that produces a `.pptx`:
+
+```bash
+$PYTHON_CMD -m pip install -q python-pptx Pillow
+
+# 验证脚本位于 csa-skills 插件根目录:
+CSA_SCRIPTS="$HOME/.claude/plugins/marketplaces/csa-skills/scripts"
+
+$PYTHON_CMD "$CSA_SCRIPTS/validate_visual.py" /path/to/output.pptx --output /tmp/ppt_validation.json
+```
+
+If validation FAILS (exit code 1):
+
+```bash
+$PYTHON_CMD "$CSA_SCRIPTS/fix_overflow.py" /path/to/output.pptx --report /tmp/ppt_validation.json -o /path/to/output.pptx
+$PYTHON_CMD "$CSA_SCRIPTS/validate_visual.py" /path/to/output.pptx --output /tmp/ppt_validation.json
+```
+
+> **脚本位置**: `~/.claude/plugins/marketplaces/csa-skills/scripts/validate_visual.py`
+> 这是插件根目录下的独立脚本，不依赖任何子 skill，任何触发 csa-skills 的场景都能调用。
+
+**Do NOT deliver until validation passes.**
+
+### 双重校验机制（算法 + LLM 视觉）
+
+1. **算法校验**：`validate_visual.py` 检测溢出、widow line（自动化，速度快）
+2. **LLM 视觉校验**：Agent 自身读取渲染后的 PNG 截图，确认内容完整可见、布局合理
+
+**两者都通过才算通过。** 算法有盲区（PIL 与 PowerPoint 渲染差异），LLM 看截图能发现算法遗漏的问题。
+
+**LLM 视觉校验流程（模型无关）**：
+
+```bash
+# 渲染新建/修改的页面为 PNG
+$PYTHON_CMD "$CSA_SCRIPTS/render_slides.py" /path/to/output.pptx \
+  --output-dir /tmp/slide_renders/ \
+  --slides <页码>
+```
+
+然后 Agent 直接使用 Read 工具读取 `/tmp/slide_renders/slide-*.png` 图片，验证：
+- 所有文本完整可见（无裁切截断）
+- 无 widow line
+- 布局合理（无重叠、无异常空白）
+
+> **不绑定特定模型** — coding agent 本身就是多模态 LLM，直接用内置能力读图即可。
+> 不需要额外 API 调用或硬编码模型名称。
+
+Read `../skywork-ppt/workflow_validate.md` for the full loop.
+
+Fix priority (applied in order):
+1. Expand container（不影响字体，避免换行）
+2. Widen shape（消除 widow line）
+3. Reduce font size（无硬性下限，完整可见是硬约束）
+4. Reduce spacing
+5. Truncate（最后手段）
+
+---
+
 ## Quality Checklist
 
 Before delivering any presentation, verify:
 
+- [ ] **Visual validation PASSED**: `validate_visual.py` exit code 0 (no text overflow, no widow lines)
 - [ ] **Content accuracy**: Cloud service names, pricing tiers, and features are current (Azure, AWS, GCP — whichever the deck covers)
 - [ ] **Visual consistency**: Diagrams use consistent colors and icon styles throughout
 - [ ] **Language**: No mixed-language issues (don't accidentally leave English labels in a

@@ -95,14 +95,44 @@ On success the script prints:
 - `SLIDE_COUNT: ...`
 - `SLIDE_TITLES: [...]`
 
-Deliver:
+## 5. Visual Validation (MANDATORY — do NOT skip)
+
+**This step is required before delivering any output.**
+
+Run validation:
+
+```bash
+$PYTHON_CMD "$CSA_SCRIPTS/validate_visual.py" /absolute/path/output.pptx --output /tmp/ppt_validation.json
+```
+
+If exit code is 1 (issues found), auto-fix:
+
+```bash
+$PYTHON_CMD "$CSA_SCRIPTS/fix_overflow.py" /absolute/path/output.pptx \
+  --report /tmp/ppt_validation.json \
+  -o /absolute/path/output.pptx
+```
+
+Re-validate:
+
+```bash
+$PYTHON_CMD "$CSA_SCRIPTS/validate_visual.py" /absolute/path/output.pptx --output /tmp/ppt_validation.json
+```
+
+- If PASS → proceed to deliver
+- If FAIL on newly generated slides → go back to step 3, adjust the generation parameters (reduce content, increase text box sizes in ppt_core.py) and regenerate
+- If FAIL only on pre-existing content with minor overflow (< 0.1") → acceptable, deliver with note
+
+## 6. Deliver
 
 1. the local absolute output path
 2. slide count
 3. slide titles or a brief content summary
+4. validation status (PASS / number of remaining minor issues)
 
 ## Notes
 
 - The local generator builds a structured outline from the prompt and reference text.
 - If the user wants a very specific structure, provide an explicit outline JSON via `--outline` or `--outline-file` instead of relying on auto-outline generation.
 - This workflow does not call any remote PPT generation service.
+- **Validation is non-negotiable** — the task is NOT complete until validation passes.
