@@ -1,6 +1,6 @@
 {
   "name": "csa-ppt",
-  "version": "1.2.0",
+  "version": "1.4.0",
   "description": "All-in-one presentation toolkit for Cloud Solution Architects (Azure/AWS/GCP). Includes: csa-ppt (smart orchestrator with combined routing), azure-diagrams (700+ cloud icons, auto-detection), excalidraw-diagram (hand-drawn style, validation), frontend-slides (HTML presentations), pptx (OOXML PowerPoint), skywork-ppt (slide local operations). Covers customer demos, tech sharing, workshops, architecture reviews, and template filling.",
   "author": {
     "name": "huqianghui",
