@@ -570,6 +570,11 @@ $PYTHON_CMD "$CSA_SCRIPTS/validate_visual.py" /path/to/output.pptx --output /tmp
 
 **两者都通过才算通过。** 算法有盲区（PIL 与 PowerPoint 渲染差异），LLM 看截图能发现算法遗漏的问题。
 
+> ⚠️ **PIL 渲染的已知限制**：PIL 不会裁剪溢出文本（全部画出），而 PowerPoint 会在文本框边界截断。
+> 因此无 LibreOffice 时，LLM 看 PIL 截图可能无法发现真实溢出。
+> **强烈建议安装 LibreOffice**（跨平台：macOS `brew install --cask libreoffice` / Windows `choco install libreoffice` / Linux `apt install libreoffice`）。
+> 有 LibreOffice 时渲染与 PowerPoint 一致，LLM 视觉校验才完全可靠。
+
 **LLM 视觉校验流程（模型无关）**：
 
 ```bash
